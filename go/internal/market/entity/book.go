@@ -6,20 +6,20 @@ import (
 )
 
 type Book struct {
-	Order            []*Order
-	Transactions     []*Transaction
-	OrdersChan       chan *Order
-	OrdersChanOutput chan *Order
-	Wg               *sync.WaitGroup
+	Order         []*Order
+	Transactions  []*Transaction
+	OrdersChan    chan *Order
+	OrdersChanOut chan *Order
+	Wg            *sync.WaitGroup
 }
 
-func NewBook(orderChan chan *Order, orderChanOutput chan *Order, wg *sync.WaitGroup) *Book {
+func NewBook(orderChan chan *Order, orderChanOut chan *Order, wg *sync.WaitGroup) *Book {
 	return &Book{
-		Order:            []*Order{},
-		Transactions:     []*Transaction{},
-		OrdersChan:       orderChan,
-		OrdersChanOutput: orderChanOutput,
-		Wg:               wg,
+		Order:         []*Order{},
+		Transactions:  []*Transaction{},
+		OrdersChan:    orderChan,
+		OrdersChanOut: orderChanOut,
+		Wg:            wg,
 	}
 }
 
@@ -54,8 +54,8 @@ func (b *Book) Trade() {
 					b.AddTransaction(transaction, b.Wg)
 					sellOrder.Transactions = append(sellOrder.Transactions, transaction)
 					order.Transactions = append(order.Transactions, transaction)
-					b.OrdersChanOutput <- sellOrder
-					b.OrdersChanOutput <- order
+					b.OrdersChanOut <- sellOrder
+					b.OrdersChanOut <- order
 					if sellOrder.PendingShares > 0 {
 						sellOrders[asset].Push(sellOrder)
 					}
@@ -70,8 +70,8 @@ func (b *Book) Trade() {
 					b.AddTransaction(transaction, b.Wg)
 					buyOrder.Transactions = append(buyOrder.Transactions, transaction)
 					order.Transactions = append(order.Transactions, transaction)
-					b.OrdersChanOutput <- buyOrder
-					b.OrdersChanOutput <- order
+					b.OrdersChanOut <- buyOrder
+					b.OrdersChanOut <- order
 					if buyOrder.PendingShares > 0 {
 						buyOrders[asset].Push(buyOrder)
 					}
