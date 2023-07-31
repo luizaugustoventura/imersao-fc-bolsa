@@ -94,7 +94,7 @@ export const ChartComponent = forwardRef<
 
     const handleResize = () => {
       chart.applyOptions({
-        ...chart.options,
+        ...chartOptions,
         width: chartContainerRef.current.clientWidth,
       });
     };
