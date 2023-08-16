@@ -1,8 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma/prisma.service';
 import { InitTransactionDto, InputExecuteTransactionDto } from './order.dto';
-import { OrderStatus, OrderType } from '@prisma/client';
+import { Order, OrderStatus, OrderType } from '@prisma/client';
 import { ClientKafka } from '@nestjs/microservices';
+import { InjectModel } from '@nestjs/mongoose';
+import { Order as OrderSchema } from './order.schema';
+import { Model } from 'mongoose';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class OrdersService {
@@ -10,6 +14,7 @@ export class OrdersService {
     private prismaService: PrismaService,
     @Inject('ORDERS_PUBLISHER')
     private readonly kafkaClient: ClientKafka,
+    @InjectModel(OrderSchema.name) private orderModel: Model<OrderSchema>,
   ) {}
 
   all(filter: { wallet_id: string }) {
@@ -83,6 +88,13 @@ export class OrdersService {
             price: input.price,
           },
         });
+        await this.prismaService.assetDaily.create({
+          data: {
+            asset_id: order.asset_id,
+            date: new Date(),
+            price: input.price,
+          },
+        });
         const walletAsset = await prisma.walletAsset.findUnique({
           where: {
             wallet_id_asset_id: {
@@ -121,6 +133,40 @@ export class OrdersService {
           });
         }
       }
+    });
+  }
+
+  subscribeEvents(
+    wallet_id: string,
+  ): Observable<{ event: 'order-created' | 'order-updated'; data: Order }> {
+    return new Observable((observer) => {
+      this.orderModel
+        .watch(
+          [
+            {
+              $match: {
+                $or: [{ operationType: 'insert' }, { operationType: 'update' }],
+                'fullDocument.wallet_id': wallet_id,
+              },
+            },
+          ],
+          { fullDocument: 'updateLookup' },
+        )
+        .on('change', async (data) => {
+          console.log(data.fullDocument);
+          const order = await this.prismaService.order.findUnique({
+            where: {
+              id: data.fullDocument._id + '',
+            },
+          });
+          observer.next({
+            event:
+              data.operationType === 'insert'
+                ? 'order-created'
+                : 'order-updated',
+            data: order,
+          });
+        });
     });
   }
 }
