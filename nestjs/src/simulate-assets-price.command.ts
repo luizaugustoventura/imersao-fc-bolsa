@@ -30,6 +30,10 @@ export class SimulateAssetsPriceCommand extends CommandRunner {
     await this.createOrders();
   }
 
+  randomNumberInInterval(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min) + min);
+  }
+
   async cleanDatabase() {
     await this.prismaService.$transaction([
       this.prismaService.transaction.deleteMany({}),
@@ -99,37 +103,42 @@ export class SimulateAssetsPriceCommand extends CommandRunner {
     console.log('Creating orders...');
     const range = (start: number, end: number) =>
       Array.from({ length: end - start }, (_, i) => i + start);
+    let p1: number;
+    let p2: number;
 
     for (const index of range(1, 100)) {
+      p1 = this.randomNumberInInterval(index, index * 10);
+      p2 = this.randomNumberInInterval(index, index * 10);
+
       await this.ordersService.initTransaction({
         asset_id: 'asset1',
         wallet_id: 'wallet1',
-        price: 100 + index,
-        shares: 1000,
+        price: p1,
+        shares: 100,
         type: 'SELL',
       });
 
       await this.ordersService.initTransaction({
         asset_id: 'asset1',
         wallet_id: 'wallet2',
-        price: 100 + index + 10,
-        shares: 1000,
+        price: p1 + 1,
+        shares: 100,
         type: 'BUY',
       });
 
       await this.ordersService.initTransaction({
         asset_id: 'asset2',
         wallet_id: 'wallet1',
-        price: 200 + index,
-        shares: 1000,
+        price: p2,
+        shares: 100,
         type: 'SELL',
       });
 
       await this.ordersService.initTransaction({
         asset_id: 'asset2',
         wallet_id: 'wallet2',
-        price: 200 + index + 10,
-        shares: 1000,
+        price: p2 + 1,
+        shares: 100,
         type: 'BUY',
       });
 
