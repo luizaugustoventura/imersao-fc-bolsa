@@ -1,6 +1,11 @@
 "use client";
 
-import { ColorType, ISeriesApi, createChart } from "lightweight-charts";
+import {
+  ColorType,
+  ISeriesApi,
+  UTCTimestamp,
+  createChart,
+} from "lightweight-charts";
 import {
   MutableRefObject,
   forwardRef,
@@ -63,8 +68,11 @@ export const ChartComponent = forwardRef<
   const seriesRef = useRef() as MutableRefObject<ISeriesApi<"Area">>;
 
   useImperativeHandle(ref, () => ({
-    update: (data: { time: string; value: number }) => {
-      seriesRef.current.update(data);
+    update: (data: { time: number; value: number }) => {
+      seriesRef.current.update({
+        ...data,
+        time: (data.time / 1000) as UTCTimestamp,
+      });
     },
   }));
 
