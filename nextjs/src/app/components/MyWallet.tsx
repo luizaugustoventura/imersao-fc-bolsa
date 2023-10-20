@@ -126,7 +126,7 @@ export default function MyWallet(props: { wallet_id: string }) {
             <TableCell>
               <Link
                 className="font-medium hover:underline text-cyan-500"
-                href={`/${props.wallet_id}/home-broker/${walletAsset.id}`}
+                href={`/${props.wallet_id}/home-broker/${walletAsset.Asset.id}`}
               >
                 Comprar/Vender
               </Link>
