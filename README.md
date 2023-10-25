@@ -29,6 +29,6 @@ O objetivo da imersão é aprender uma forma de comunicação assíncrona para a
 
 ## Capturas de tela
 
-![Captura de tela - Meus investimentos](docs/assets/screenshot_my_investiments.png)
+![Captura de tela - Meus investimentos](docs/assets/screenshot_my_investiments.jpg)
 
 ![Captura de tela - Gráfico do ativo](docs/assets/screenshot_asset_chart.jpg)
